@@ -1,0 +1,5 @@
+# Ignorar archivo .bat
+iniciar-mongo.bat
+
+# Ignorar carpeta info
+/info/

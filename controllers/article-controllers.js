@@ -222,6 +222,83 @@ const getImage = (req, res) => {
         }
     });
 };
+
+const search = async (req, res) => {
+    const searchString = req.params.search;
+
+    try {
+        // Buscar por titulo o contenido que contengan el texto, sin importar mayus/minus
+        const articles = await Article.find({
+            $or: [
+                { titulo: { $regex: searchString, $options: "i" } },
+                { contenido: { $regex: searchString, $options: "i" } },
+            ],
+        });
+
+        if (articles.length === 0) {
+            return res.status(404).json({
+                status: "not found",
+                message: "No se encontraron artículos que coincidan con la búsqueda",
+            });
+        }
+
+        return res.status(200).json({
+            status: "success",
+            articles,
+        });
+    } catch (error) {
+        return res.status(500).json({
+            status: "error",
+            message: "Error al realizar la búsqueda",
+            error: error.message,
+        });
+    }
+};
+
+
+const searchWithQuery = async (req, res) => {
+    const { query = "", order = "asc", limit = 10, page = 1 } = req.query;
+
+    const sortOrder = order === "desc" ? -1 : 1;
+    const limitNum = parseInt(limit);
+    const skipNum = (parseInt(page) - 1) * limitNum;
+
+    try {
+        const articles = await Article.find({
+            $or: [
+                { titulo: { $regex: query, $options: "i" } },
+                { contenido: { $regex: query, $options: "i" } },
+            ],
+        })
+            .sort({ fecha: sortOrder })
+            .skip(skipNum)
+            .limit(limitNum);
+
+        if (articles.length === 0) {
+            return res.status(404).json({
+                status: "not found",
+                message: "No se encontraron artículos que coincidan con la búsqueda",
+            });
+        }
+
+        return res.status(200).json({
+            status: "success",
+            articles,
+            pagination: {
+                page: parseInt(page),
+                limit: limitNum,
+            },
+        });
+    } catch (error) {
+        return res.status(500).json({
+            status: "error",
+            message: "Error al realizar la búsqueda",
+            error: error.message,
+        });
+    }
+};
+
+
 module.exports = {
     test,
     createArticle,
@@ -230,5 +307,7 @@ module.exports = {
     deleteArticle,
     editArticle,
     uploadFile,
-    getImage
+    getImage,
+    search,
+    searchWithQuery
 };

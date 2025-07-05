@@ -11,11 +11,6 @@ const connection = async () => {
     }
 }
 
-const saludos = () => {
-    console.log("Hola te estoy saludando de connection.js");
-}
-
 module.exports = {
-    connection,
-    saludos
+    connection
 }

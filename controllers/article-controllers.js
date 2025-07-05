@@ -1,5 +1,7 @@
 const Article = require("../models/article-model");
 const { validateArticle } = require("../helpers/validate");
+const fs = require("fs");
+const path = require("path");
 
 // Ruta de prueba
 const test = (req, res) => {
@@ -136,11 +138,97 @@ const deleteArticle = async (req, res) => {
     }
 };
 
+//subir archivo
+const uploadFile = async (req, res) => {
+    //configurar multer(middlware a una ruta en concreto)
+
+    //recoger el fichero subido 
+    if (!req.file && !req.files) {
+        return res.status(404).json({
+            status: "error",
+            message: "Peticion invalida"
+        })
+    }
+    console.log(req.file)
+
+    //conseguir nombre del archivo o de la imagen
+    let nameFile = req.file.originalname;
+
+    //conseguir la extension
+    let fileExtension = nameFile.split('.').pop().toLowerCase();
+
+    const allowedExtensions = ["png", "jpg", "jpeg", "webp", "gif"];
+
+    if (!allowedExtensions.includes(fileExtension)) {
+        fs.unlink(req.file.path, (error) => {
+            if (error) {
+                console.error("Error al borrar archivo inválido:", error);
+            }
+            return res.status(400).json({
+                status: "error",
+                message: "Archivo inválido"
+            });
+        });
+    } else {
+        //si todo va bien , actualizamos el articulo al cual subo la img 
+
+        const articleId = req.params.id;
+
+        try {
+            //chequear nombre en model 
+            const updatedArticle = await Article.findOneAndUpdate(
+                { _id: articleId },
+                { imagen: req.file.filename },
+                { new: true }
+            );
+
+            if (!updatedArticle) {
+                return res.status(404).json({
+                    status: "Error 404",
+                    message: "No se encontró el artículo para actualizar"
+                });
+            }
+
+            return res.status(200).json({
+                status: "success",
+                article: updatedArticle,
+                fichero: req.file
+            });
+        } catch (error) {
+            return res.status(400).json({
+                status: "Bad request - Error 400",
+                message: error.message || "No se ha editado el artículo"
+            });
+        }
+    }
+};
+
+//obtener la imagen
+const getImage = (req, res) => {
+    let fichero = req.params.fichero;
+    let ruta_fisica = "./images/articles/" + fichero;
+
+    fs.stat(ruta_fisica, (err, stats) => {
+        if (!err && stats.isFile()) {
+            return res.sendFile(path.resolve(ruta_fisica));
+        } else {
+            return res.status(404).json({
+                status: "404 Not Found",
+                message: "La imagen no existe",
+                stats,
+                fichero,
+                ruta_fisica
+            });
+        }
+    });
+};
 module.exports = {
     test,
     createArticle,
     getArticles,
     getArticlesById,
     deleteArticle,
-    editArticle
+    editArticle,
+    uploadFile,
+    getImage
 };

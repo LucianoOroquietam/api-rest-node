@@ -3,11 +3,11 @@ const { Schema, model } = require('mongoose');
 const ArticuloSchema = Schema({
     titulo: {
         type: String,
-        require: true //obligatorio
+        required: true //obligatorio
     },
     contenido: {
         type: String,
-        require: true 
+        required: true 
     },
     fecha: {
         type: Date,

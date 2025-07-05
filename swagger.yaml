@@ -1,0 +1,185 @@
+openapi: 3.0.0
+info:
+  title: API de Artículos
+  description: API REST para gestionar artículos con Express y MongoDB
+  version: 1.0.0
+servers:
+  - url: http://localhost:3900/api
+    description: Servidor local de desarrollo
+
+paths:
+  /test:
+    get:
+      summary: Probar API
+      responses:
+        '200':
+          description: Test de conexión
+
+  /articles:
+    get:
+      summary: Obtener todos los artículos
+      responses:
+        '200':
+          description: Lista de artículos
+
+  /articles/{id}:
+    get:
+      summary: Obtener artículo por ID
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Artículo encontrado
+        '404':
+          description: Artículo no encontrado
+
+    put:
+      summary: Editar artículo por ID
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ArticleInput'
+      responses:
+        '200':
+          description: Artículo actualizado
+        '404':
+          description: Artículo no encontrado
+
+    delete:
+      summary: Eliminar artículo por ID
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Artículo eliminado
+        '404':
+          description: No encontrado
+
+  /create:
+    post:
+      summary: Crear nuevo artículo
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ArticleInput'
+      responses:
+        '201':
+          description: Artículo creado
+
+  /upload-file/{id}:
+    post:
+      summary: Subir imagen a artículo
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+      responses:
+        '200':
+          description: Imagen subida y artículo actualizado
+        '400':
+          description: Archivo inválido
+
+  /image/{fichero}:
+    get:
+      summary: Obtener imagen subida
+      parameters:
+        - in: path
+          name: fichero
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Imagen servida correctamente
+        '404':
+          description: Imagen no encontrada
+
+  /search/{search}:
+    get:
+      summary: Buscar artículos por término (ruta)
+      parameters:
+        - in: path
+          name: search
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Resultados de búsqueda
+        '404':
+          description: No se encontraron coincidencias
+
+  /articles/search:
+    get:
+      summary: Buscar artículos con query (filtros)
+      parameters:
+        - in: query
+          name: query
+          schema:
+            type: string
+        - in: query
+          name: order
+          schema:
+            type: string
+            enum: [asc, desc]
+        - in: query
+          name: limit
+          schema:
+            type: integer
+        - in: query
+          name: page
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Resultados de búsqueda con paginación
+        '404':
+          description: No se encontraron artículos
+
+components:
+  schemas:
+    ArticleInput:
+      type: object
+      required:
+        - titulo
+        - contenido
+      properties:
+        titulo:
+          type: string
+        contenido:
+          type: string
+        fecha:
+          type: string
+          format: date
+        imagen:
+          type: string

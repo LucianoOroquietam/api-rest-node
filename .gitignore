@@ -1,5 +1,11 @@
-# Ignorar archivo .bat
+# Ignorar archivo .bat 
 iniciar-mongo.bat
 
-# Ignorar carpeta info
+# 
 /info/
+
+# Ignorar carpeta node_modules
+node_modules/
+
+# Ignorar archivo de variables de entorno
+.env

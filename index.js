@@ -2,6 +2,9 @@ const { connection } = require("./database/connection");
 // const db = require("./database/connection");
 const express = require("express");
 const cors = require("cors");
+const swaggerUi = require("swagger-ui-express");
+const YAML = require("yamljs");
+const swaggerDocument = YAML.load("./swagger.yaml");
 
 console.log("App iniciada");
 
@@ -32,6 +35,8 @@ app.use("/api", rutas_articulos);
 // Hacer accesibles las imagenes publicamente
 app.use("/images", express.static("./images"));
 
+
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
 //Crear servidor y escuchar peticiones http
 app.listen(puerto, () => {
